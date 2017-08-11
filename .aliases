@@ -1,0 +1,79 @@
+# Reload shell, needed in case you want to check your nifty new alias
+alias reload="source ~/.zshrc"
+
+# Faster commands
+alias g="git"
+alias ha="history"
+alias e="vim" # you could change it to "emacs" tough I would silently hate you..
+
+# Nice gitignoring for the piscine
+# Adds the .gitignore file in your current directory
+# Stops tracking of:
+# This file - everything with *.out extension
+# the main.c file
+alias gitnore="echo \".gitignore \n.*out \n.main.c \" > .gitignore"
+
+# Norminettes all the files in the subdirectories
+# It "smartly" shows only the exercises errors
+normi() {
+	print="";
+	norminette -R CheckForbiddenSourceHeader \
+		| while read line; \
+		do
+			if [[ $line =~ "Norme" ]]; then
+				print="y"
+				if [[ $line =~ ".out" ]]; then
+					print="n"
+				fi
+				if [[ $line =~ "main.c" ]]; then
+					print="n"
+				fi
+			fi
+			if [[ $print == "y" ]]; then
+				echo $line
+			fi
+		done \
+
+# the cnc "C Nazie Compiler"
+# has the proper flags for the mourinette
+# and can chain up to 5 files easily to the main.c
+cnc() {
+	gcc -Wextra -Wall -Werror main.c $1 $2 $3 $4 $5
+}
+
+# "smartly" check your histories last 20 different commands
+# do note that if you type 1 command 200 times it will show that
+# command 20 times
+h() {
+	CHECK_ARRAY=('SNEAKY');
+	history \
+	| tail -200 \
+	| while read line; \
+	do
+	N_LINE=${line##*\ \ }
+	N_LINE=${N_LINE%%\n*}
+	N_LINE=${N_LINE// /_}
+	EXIST="n"
+	i=0
+	while [[ $i -le ${#CHECK_ARRAY[@]} ]]
+	do
+		#echo $EXIST
+		CURR=${CHECK_ARRAY[$i]}
+		# echo curr: $CURR
+		if [[ $CURR  == $N_LINE ]]; then
+			# echo "exists"
+			EXIST="y"
+			break
+		else
+			 # echo "dosen't"
+			EXIST="n"
+		fi
+		i=`expr $i + 1`
+	done
+	if [[ $EXIST == "n" ]]; then
+		echo "h-> $line"
+		CHECK_ARRAY+=("$N_LINE")
+	fi
+	done \
+	| tail -20
+}
